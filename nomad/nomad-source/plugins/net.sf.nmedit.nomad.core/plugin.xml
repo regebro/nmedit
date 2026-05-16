@@ -34,7 +34,7 @@ javax.swing.plaf.metal.MetalTheme=com.jgoodies.looks.plastic.theme.DesertBlue
 	</attributes>
 	
 	<requires>
-		<import plugin-id="net.sf.nmedit.nmutils"  />
+		<import plugin-id="net.sf.nmedit.nmutils" exported="true" />
 		<import plugin-id="org.apache.xerces" />
 		<import plugin-id="com.jgoodies.forms" />
 		<import plugin-id="com.jgoodies.looks" />

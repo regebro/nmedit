@@ -46,9 +46,6 @@
 		<library id="batik-parser" path="lib/batik-parser.jar" type="code" >
 		<export prefix="*"/>
 		</library>
-		<library id="batik-rasterizer" path="lib/batik-rasterizer.jar" type="code" >
-		<export prefix="*"/>
-		</library>
 		<library id="batik-svg-dom" path="lib/batik-svg-dom.jar" type="code" >
 		<export prefix="*"/>
 		</library>

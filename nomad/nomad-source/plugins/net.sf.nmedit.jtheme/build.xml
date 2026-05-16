@@ -34,8 +34,8 @@
     <echo message="classpath=${classpath_string}"/>
 
     <javac srcdir="${src}" destdir="${classes}" debug="true"
-    	classpath="${classpath_string}"
-    	target="1.5" source="1.5">
+    classpath="${classpath_string}"
+    target="21" source="21">
     </javac>
   </target>
 

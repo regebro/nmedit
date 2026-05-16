@@ -6,7 +6,8 @@
 	</attributes>
 	<runtime>
 		<library id="nmutils" path="lib/nmutils.jar" type="code">
-		<export prefix="*"/>
+		<export prefix="net/sf/nmedit/nmutils/"/>
+		<export prefix="net/sf/nmedit/jmisc/"/>
 		</library>
 	</runtime>
 </plugin>

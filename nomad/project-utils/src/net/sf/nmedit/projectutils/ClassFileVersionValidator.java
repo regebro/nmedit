@@ -32,12 +32,14 @@ import java.util.jar.JarFile;
 public class ClassFileVersionValidator
 {
 
+    public static final int MAJ_JDK21 = 65;
     public static final int MAJ_J2SE6 = 50;
     public static final int MAJ_J2SE5 = 49;
     public static final int MAJ_JDK14 = 48;
     public static final int MAJ_JDK13 = 47;
     public static final int MAJ_JDK12 = 46;
 
+    public static final String MAJ_JDK21_NAME = "JDK_21";
     public static final String MAJ_J2SE6_NAME = "J2SE_6.0";
     public static final String MAJ_J2SE5_NAME = "J2SE_5.0";
     public static final String MAJ_JDK14_NAME = "JDK_1.4";
@@ -48,6 +50,7 @@ public class ClassFileVersionValidator
     {
         switch (majorVersion)
         {
+            case MAJ_JDK21: return "JDK 21";
             case MAJ_J2SE6: return "J2SE 6.0";
             case MAJ_J2SE5: return "J2SE 5.0";
             case MAJ_JDK14: return "JDK 1.4";
@@ -59,6 +62,8 @@ public class ClassFileVersionValidator
     
     public static final int stringToMajorVersion(String version)
     {
+        if (version.equals(MAJ_JDK21_NAME))
+            return MAJ_JDK21;
         if (version.equals(MAJ_J2SE6_NAME))
             return MAJ_J2SE6;
         if (version.equals(MAJ_J2SE5_NAME))
@@ -142,6 +147,7 @@ public class ClassFileVersionValidator
         {
             System.out.println("usage: -version <version> [<file>|<directory>]+");
             System.out.println("<version>-strings: "
+                    +MAJ_JDK21_NAME+", "
                     +MAJ_J2SE6_NAME+", "
                     +MAJ_J2SE5_NAME+", "
                     +MAJ_JDK14_NAME+", "

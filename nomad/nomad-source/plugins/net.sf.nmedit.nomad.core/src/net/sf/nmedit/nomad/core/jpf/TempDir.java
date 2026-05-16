@@ -57,8 +57,15 @@ public class TempDir
     }
     public static TempDir forObject(Object o)
     {
-        TempDir tmp = new TempDir(PluginManager.lookup(o).getPluginFor(o));
-        return tmp;
+        PluginManager manager = PluginManager.lookup(o);
+        if (manager == null)
+            return generalTempDir();
+
+        Plugin plugin = manager.getPluginFor(o);
+        if (plugin == null)
+            return generalTempDir();
+
+        return new TempDir(plugin);
     }
     
     public static TempDir generalTempDir() {
@@ -76,6 +83,12 @@ public class TempDir
     {
         if (root != null)
             return root;
+
+        if (plugin == null)
+        {
+            root = getBaseDir();
+            return root;
+        }
         
         PluginDescriptor pd = plugin.getDescriptor();
         

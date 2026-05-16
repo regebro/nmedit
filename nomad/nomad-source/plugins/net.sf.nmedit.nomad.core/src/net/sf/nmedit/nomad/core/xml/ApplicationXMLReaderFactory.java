@@ -29,6 +29,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 public class ApplicationXMLReaderFactory
 {
 
+    public final static String jdkXmlReaderClassName = "com.sun.org.apache.xerces.internal.parsers.SAXParser";
     public final static String xmlReaderClassName = "org.apache.xerces.parsers.SAXParser";
     
     public static XMLReader createXMLReader() throws SAXException
@@ -39,9 +40,24 @@ public class ApplicationXMLReaderFactory
     public static XMLReader createXMLReader(boolean validation) throws SAXException
     {
         Thread.currentThread().setContextClassLoader(ApplicationXMLReaderFactory.class.getClassLoader());
-        
-        // XMLReaderFactory not working in plugin
-        XMLReader xmlReader = XMLReaderFactory.createXMLReader(xmlReaderClassName);
+
+        XMLReader xmlReader;
+        try
+        {
+            xmlReader = XMLReaderFactory.createXMLReader(jdkXmlReaderClassName);
+        }
+        catch (SAXException e)
+        {
+            try
+            {
+                xmlReader = XMLReaderFactory.createXMLReader();
+            }
+            catch (SAXException e2)
+            {
+                // Fallback for legacy environments.
+                xmlReader = XMLReaderFactory.createXMLReader(xmlReaderClassName);
+            }
+        }
         xmlReader.setFeature("http://xml.org/sax/features/validation", validation);
         return xmlReader;
     }

@@ -22,6 +22,7 @@
  */
 package net.sf.nmedit.nomad.core.menulayout;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -97,8 +98,10 @@ public class MenuLayout implements Iterable<MLEntry>
     public static MenuLayout getLayout(InputStream in) throws Exception
     {
         XMLReader xmlReader = ApplicationXMLReaderFactory.createXMLReader();
-        
-        InputSource is = new InputSource(in);
+
+        // Parse from a byte-array-backed stream so parser close/reopen behavior
+        // does not invalidate the underlying source stream.
+        InputSource is = new InputSource(new ByteArrayInputStream(in.readAllBytes()));
       
         MLContentHandler ch = new MLContentHandler();
         xmlReader.setContentHandler(ch);

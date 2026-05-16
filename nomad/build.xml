@@ -78,6 +78,11 @@ Note:
 	            <include name="jpf-boot.jar"/>
 	            <include name="nomad-splash.jar"/>
     	    </fileset>
+			<fileset dir="${nomad-source}/plugins">
+				<include name="**/lib/*.jar"/>
+			</fileset>
+			<dirset dir="${nomad-source}/plugins" includes="**/classes"/>
+			<dirset dir="${nomad-source}/plugins" includes="**/data,**/codecs"/>
         </classpath>
     </java>
   </target>
@@ -210,7 +215,7 @@ Note:
   <target name="validate-dist">
     <!-- validate class files -->
   	<java jar="${libprojectutils}" dir="." failonerror="true" fork="true">
-  	  <arg line="-validate-class-version -version J2SE_5.0 nomad-dist"/>
+	  <arg line="-validate-class-version -version JDK_21 nomad-dist"/>
   	</java>
   </target>
 	
@@ -231,7 +236,7 @@ Note:
             name="Nomad"
             icon="artwork/icns/nomad.icns"
             mainclass="org.java.plugin.boot.Boot"
-            jvmversion="1.5*"
+			jvmversion="21*"
             workingdirectory="$APP_PACKAGE/Contents/Resources/Java">
        <jarfilelist dir="${dist}" files="nomad.jar"/>
        <javaproperty name="apple.laf.useScreenMenuBar" value="true"/>

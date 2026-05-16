@@ -61,7 +61,7 @@
 
   <target name="compile" depends="init"
           description="compile the source">
-    <javac srcdir="${src}" destdir="${build}" debug="true" target="1.5" source="1.5">
+    <javac srcdir="${src}" destdir="${build}" debug="true" target="21" source="21">
         <classpath>
           <pathelement path="."/>
           <pathelement location="../java_depencies/commons-logging/commons-logging.jar"/>
@@ -83,7 +83,7 @@
 
   <target name="compile-test" depends="init"
           description="compile the test source">
-    <javac srcdir="${test}" destdir="${build}" debug="true" target="1.5" source="1.5" />
+    <javac srcdir="${test}" destdir="${build}" debug="true" target="21" source="21" />
   	<!--
     <copy todir="${build}">
       <fileset dir="test">

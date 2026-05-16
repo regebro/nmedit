@@ -23,10 +23,12 @@
 package net.sf.nmedit.nomad.core;
 
 import java.io.File;
+import java.security.CodeSource;
 import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.java.plugin.PathResolver;
+import org.java.plugin.Plugin;
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.PluginDescriptor;
 
@@ -47,12 +49,35 @@ public class JPFUtil
 
     public static File getPluginDirectory(Object anObject)
     {
-        URL url = pluginManager.getPluginFor(anObject).getDescriptor().getLocation();
+        Plugin plugin = pluginManager.getPluginFor(anObject);
+        if (plugin != null)
+            return getDirectoryFromLocation(plugin.getDescriptor().getLocation());
+
+        CodeSource source = anObject.getClass().getProtectionDomain().getCodeSource();
+        if (source == null)
+            return null;
+
+        return getDirectoryFromLocation(source.getLocation());
+    }
+
+    private static File getDirectoryFromLocation(URL url)
+    {
         File dir = null;
         try
         {
-            File plugin_xml = new File(url.toURI());
-            dir = plugin_xml.getParentFile();
+            File location = new File(url.toURI());
+
+            if (location.isFile())
+                location = location.getParentFile();
+
+            if (location == null)
+                return null;
+
+            String name = location.getName();
+            if ("classes".equals(name) || "lib".equals(name) || "data".equals(name) || "codecs".equals(name))
+                location = location.getParentFile();
+
+            dir = location;
         }
         catch (URISyntaxException e)
         {
@@ -68,7 +93,11 @@ public class JPFUtil
     
     public static ClassLoader getPluginClassLoader(Object obj)
     {
-        return pluginManager.getPluginClassLoader(pluginManager.getPluginFor(obj).getDescriptor());
+        Plugin plugin = pluginManager.getPluginFor(obj);
+        if (plugin != null)
+            return pluginManager.getPluginClassLoader(plugin.getDescriptor());
+
+        return obj.getClass().getClassLoader();
     }
 
     public static URL getResource(PluginDescriptor descr, String resourceName) 
@@ -80,7 +109,11 @@ public class JPFUtil
     //  the obj can be of any kind (SomeClass.class, this, this.getClass() - any!) 
     public static URL getResource(Object obj, String resourceName) 
     { 
-        return getResource(pluginManager.getPluginFor(obj).getDescriptor(), resourceName); 
+        Plugin plugin = pluginManager.getPluginFor(obj);
+        if (plugin != null)
+            return getResource(plugin.getDescriptor(), resourceName);
+
+        return obj.getClass().getClassLoader().getResource(resourceName); 
     }
 
     public static PathResolver getPathResolver()

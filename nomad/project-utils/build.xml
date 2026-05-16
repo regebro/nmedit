@@ -12,7 +12,7 @@
   <target name="build" description="project utilities" depends="clean">
   	<!-- compile -->
   	<mkdir dir="${build}" />
-    <javac srcdir="${src}" destdir="${build}" debug="true" target="1.5" source="1.5" />
+    <javac srcdir="${src}" destdir="${build}" debug="true" target="21" source="21" />
   	<!-- make jar -->
     <jar jarfile="${jarfile}" basedir="${build}">
   	    <manifest>

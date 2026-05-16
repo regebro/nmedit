@@ -10,10 +10,10 @@
 		<import plugin-id="org.apache.xmlgraphics.batik"  />
 		<import plugin-id="net.sf.cssparser"  />
 		<import plugin-id="org.jdom"  />
-		<import plugin-id="net.sf.nmedit.nmutils"  />  
-		<import plugin-id="net.sf.nmedit.jpatch"  />  
+		<import plugin-id="net.sf.nmedit.nmutils" exported="true" />
+		<import plugin-id="net.sf.nmedit.jpatch" exported="true" />
 		<import plugin-id="org.apache.xerces" />
-		<import plugin-id="net.sf.nmedit.nomad.core"  />  
+		<import plugin-id="net.sf.nmedit.nomad.core" exported="true" />
 	</requires>
 	<runtime>
 		<library id="jtheme" path="lib/jtheme.jar" type="code" >

@@ -29,7 +29,9 @@ No target specified.
     <target name="install" description="install libarary">
       <echo>installing library</echo>
       <copy todir="${plugin-path}/lib/" overwrite="true">
-        <fileset dir="${build-path}/"/>
+        <fileset dir="${build-path}/">
+          <exclude name="batik-rasterizer.jar"/>
+        </fileset>
       </copy>
     </target>
 

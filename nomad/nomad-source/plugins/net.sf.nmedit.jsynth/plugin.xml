@@ -6,8 +6,8 @@
 		<attribute id="vendor" value="http://nmedit.sf.net/" />
 	</attributes>
   	<requires>
-		<import plugin-id="net.sf.nmedit.nomad.core"  />
-		<import plugin-id="net.sf.nmedit.nmutils"  />
+		<import plugin-id="net.sf.nmedit.nomad.core" exported="true" />
+		<import plugin-id="net.sf.nmedit.nmutils" exported="true" />
 		<import plugin-id="com.jgoodies.forms" />
 	</requires>
 	<runtime>

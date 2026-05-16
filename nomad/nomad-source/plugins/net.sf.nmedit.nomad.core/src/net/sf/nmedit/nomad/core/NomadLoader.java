@@ -105,10 +105,10 @@ public class NomadLoader
         InputStream mlIn = null;
         try
         {
-            ClassLoader loader = getClass().getClassLoader();
-            mlIn = loader.getResourceAsStream("./MenuLayout.xml");
-            
-            menuLayout = MenuLayout.getLayout(new BufferedInputStream(mlIn));
+            File menuLayoutFile = new File("plugins/net.sf.nmedit.nomad.core/data/MenuLayout.xml");
+            mlIn = new BufferedInputStream(new FileInputStream(menuLayoutFile));
+
+            menuLayout = MenuLayout.getLayout(mlIn);
         }
         catch (Exception e)
         {
@@ -176,7 +176,7 @@ public class NomadLoader
         if (list.size()<=1)
             return list;
 
-        Collections.sort(list, new DependenciesComparator(PluginManager.lookup(list.get(0))));
+        Collections.sort(list, new DependenciesComparator(plugin.getManager()));
         return list;
     }
     
@@ -195,6 +195,10 @@ public class NomadLoader
         {
             Plugin pa = manager.getPluginFor(a);
             Plugin pb = manager.getPluginFor(b);
+
+            if (pa == null || pb == null)
+                return 0;
+
             PluginDescriptor da = pa.getDescriptor();
             PluginDescriptor db = pb.getDescriptor();
 
@@ -222,15 +226,24 @@ public class NomadLoader
             serviceList.add(i.next());
         }
         
-        PluginManager manager = PluginManager.lookup(this);
+        PluginManager manager = plugin.getManager();
         
         for (int i=0;i<serviceList.size();i++)
         {
             InitService s = serviceList.get(i);
 
             float progressValue = 0.5f+(((float)i/(serviceList.size()-1))/2f);   
-            PluginDescriptor descriptor = manager.getPluginFor(s).getDescriptor();
-            String text = "init "+descriptor.getId()+" "+descriptor.getVersion();
+            Plugin servicePlugin = manager.getPluginFor(s);
+            String text;
+            if (servicePlugin != null)
+            {
+                PluginDescriptor descriptor = servicePlugin.getDescriptor();
+                text = "init "+descriptor.getId()+" "+descriptor.getVersion();
+            }
+            else
+            {
+                text = "init "+s.getClass().getName();
+            }
             // does not update splash ???:
            // progress.setProgress(progressValue);
            // progress.setText(text);
