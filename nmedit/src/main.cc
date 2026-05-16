@@ -19,6 +19,8 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <string>
+#include <vector>
 
 #include "nmprotocol/mididriver.h"
 #include "nmprotocol/midiexception.h"
@@ -38,6 +40,10 @@
 #include "mainwindow.h"
 
 #include <FL/Fl.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Choice.H>
+#include <FL/Fl_Return_Button.H>
+#include <FL/Fl_Window.H>
 
 extern char *optarg;
 extern int optind;
@@ -74,6 +80,205 @@ class DebugSynthListener : public SynthListener
 
 };
 
+static string firstExistingPath(const char* paths[], int count)
+{
+  for (int i = 0; i < count; i++) {
+    if (access(paths[i], R_OK) == 0) {
+      return string(paths[i]);
+    }
+  }
+  return string(paths[0]);
+}
+
+static string displayPortName(const string& midiPort)
+{
+  size_t sep = midiPort.find('\t');
+  if (sep == string::npos) {
+    return midiPort;
+  }
+  return midiPort.substr(0, sep);
+}
+
+static string actualPortName(const string& midiPort)
+{
+  size_t sep = midiPort.find('\t');
+  if (sep == string::npos) {
+    return midiPort;
+  }
+  return midiPort.substr(sep + 1);
+}
+
+class MidiSetupDialog
+{
+ public:
+
+  MidiSetupDialog() : accepted(false)
+  {
+    window = new Fl_Window(430, 170, "Select MIDI Interface");
+    window->begin();
+
+    driverChoice = new Fl_Choice(120, 20, 290, 26, "Driver:");
+    inputChoice = new Fl_Choice(120, 60, 290, 26, "Input:");
+    outputChoice = new Fl_Choice(120, 100, 290, 26, "Output:");
+
+    Fl_Return_Button* okButton =
+      new Fl_Return_Button(240, 135, 80, 26, "Connect");
+    Fl_Button* cancelButton = new Fl_Button(330, 135, 80, 26, "Cancel");
+
+    okButton->callback(okCB, this);
+    cancelButton->callback(cancelCB, this);
+    driverChoice->callback(driverChangedCB, this);
+
+    window->end();
+    window->set_modal();
+
+    MidiDriver::StringList drivers = MidiDriver::getDrivers();
+    for (MidiDriver::StringList::iterator i = drivers.begin();
+         i != drivers.end(); i++) {
+      driverChoice->add((*i).c_str());
+    }
+
+    if (driverChoice->size() > 0) {
+      driverChoice->value(0);
+      updatePorts();
+    }
+  }
+
+  ~MidiSetupDialog()
+  {
+    delete(window);
+  }
+
+  bool run(string& driver, string& input, string& output)
+  {
+    if (driverChoice->size() == 0) {
+      return false;
+    }
+
+    window->show();
+    while (window->shown()) {
+      Fl::wait();
+    }
+
+    if (!accepted) {
+      return false;
+    }
+
+    driver = selectedValue(driverChoice);
+    input = selectedPort(inputPorts, inputChoice);
+    output = selectedPort(outputPorts, outputChoice);
+
+    if (driver.empty() || input.empty() || output.empty()) {
+      return false;
+    }
+
+    return true;
+  }
+
+ private:
+
+  static void driverChangedCB(Fl_Widget*, void* data)
+  {
+    ((MidiSetupDialog*) data)->updatePorts();
+  }
+
+  static void okCB(Fl_Widget*, void* data)
+  {
+    MidiSetupDialog* dialog = (MidiSetupDialog*) data;
+    if (dialog->selectedValue(dialog->driverChoice).empty() ||
+        dialog->selectedPort(dialog->inputPorts, dialog->inputChoice).empty() ||
+        dialog->selectedPort(dialog->outputPorts, dialog->outputChoice).empty()) {
+      return;
+    }
+
+    dialog->accepted = true;
+    dialog->window->hide();
+  }
+
+  static void cancelCB(Fl_Widget*, void* data)
+  {
+    MidiSetupDialog* dialog = (MidiSetupDialog*) data;
+    dialog->accepted = false;
+    dialog->window->hide();
+  }
+
+  string selectedValue(Fl_Choice* choice)
+  {
+    const Fl_Menu_Item* selected = choice->mvalue();
+    if (selected == 0 || selected->label() == 0) {
+      return string();
+    }
+    return string(selected->label());
+  }
+
+  string selectedPort(const vector<string>& ports, Fl_Choice* choice)
+  {
+    int idx = choice->value();
+    if (idx < 0 || idx >= (int) ports.size()) {
+      return string();
+    }
+    return ports[idx];
+  }
+
+  void updatePorts()
+  {
+    inputChoice->clear();
+    outputChoice->clear();
+    inputPorts.clear();
+    outputPorts.clear();
+
+    string driverName = selectedValue(driverChoice);
+    if (driverName.empty()) {
+      return;
+    }
+
+    MidiDriver* tmpDriver = 0;
+    try {
+      tmpDriver = MidiDriver::createDriver(driverName);
+
+      MidiDriver::StringList inputs = tmpDriver->getMidiInputPorts();
+      for (MidiDriver::StringList::iterator i = inputs.begin();
+           i != inputs.end(); i++) {
+        string actualPort = actualPortName(*i);
+        inputPorts.push_back(actualPort);
+        inputChoice->add(displayPortName(*i).c_str());
+      }
+
+      MidiDriver::StringList outputs = tmpDriver->getMidiOutputPorts();
+      for (MidiDriver::StringList::iterator i = outputs.begin();
+           i != outputs.end(); i++) {
+        string actualPort = actualPortName(*i);
+        outputPorts.push_back(actualPort);
+        outputChoice->add(displayPortName(*i).c_str());
+      }
+    }
+    catch (MidiException& exception) {
+      printf("MidiException: %s (%d)\n",
+             exception.getMessage().c_str(),
+             exception.getError());
+    }
+
+    if (tmpDriver) {
+      delete(tmpDriver);
+    }
+
+    if (inputChoice->size() > 0) {
+      inputChoice->value(0);
+    }
+    if (outputChoice->size() > 0) {
+      outputChoice->value(0);
+    }
+  }
+
+  Fl_Window* window;
+  Fl_Choice* driverChoice;
+  Fl_Choice* inputChoice;
+  Fl_Choice* outputChoice;
+  vector<string> inputPorts;
+  vector<string> outputPorts;
+  bool accepted;
+};
+
 int main(int argc, char** argv)
 {
   MidiDriver* driver = 0;
@@ -84,9 +289,25 @@ int main(int argc, char** argv)
 	 "conditions.\n");
 
   try {
-    MidiMessage::usePDLFile("/usr/local/lib/nmprotocol/midi.pdl", 0);
-    Patch::usePDLFile("/usr/local/lib/nmpatch/patch.pdl", 0);
-    ModuleSection::usePPFFile("/usr/local/lib/nmpatch/module.ppf");
+    const char* midiPDLCandidates[] = {
+      "../../libs/codecs/midi.pdl",
+      "/usr/local/lib/nmedit-full/midi.pdl",
+      "/usr/local/lib/nmprotocol/midi.pdl"
+    };
+    const char* patchPDLCandidates[] = {
+      "../../libs/codecs/patch.pdl",
+      "/usr/local/lib/nmedit-full/patch.pdl",
+      "/usr/local/lib/nmpatch/patch.pdl"
+    };
+    const char* modulePPFCandidates[] = {
+      "../../libs/libnmpatch/src/module.ppf",
+      "/usr/local/lib/nmedit-full/module.ppf",
+      "/usr/local/lib/nmpatch/module.ppf"
+    };
+
+    MidiMessage::usePDLFile(firstExistingPath(midiPDLCandidates, 3), 0);
+    Patch::usePDLFile(firstExistingPath(patchPDLCandidates, 3), 0);
+    ModuleSection::usePPFFile(firstExistingPath(modulePPFCandidates, 3));
 
     string drivername, input, output;
     bool error = false;
@@ -115,11 +336,12 @@ int main(int argc, char** argv)
 	break;
       }
     }
-    
+
     if (error || optind > argc) {
       printf("usage: %s \\\n"
 	     "        -d mididriver \\\n"
-	     "        -i midiinput -o midioutput\n\n",
+	     "        -i midiinput -o midioutput\n"
+	     "If no midi settings are provided, a selection dialog is shown.\n\n",
 	     argv[0]);
 
       printf("Available midi drivers:\n");
@@ -132,17 +354,25 @@ int main(int argc, char** argv)
 	MidiDriver::StringList inputs = driver->getMidiInputPorts();
 	for (MidiDriver::StringList::iterator j = inputs.begin();
 	     j != inputs.end(); j++) {
-	  printf(" %s", (*j).c_str());
+    printf(" %s", displayPortName(*j).c_str());
 	}
 	printf("\n  outputs:");
 	MidiDriver::StringList outputs = driver->getMidiOutputPorts();
 	for (MidiDriver::StringList::iterator j = outputs.begin();
 	     j != outputs.end(); j++) {
-	  printf(" %s", (*j).c_str());
+    printf(" %s", displayPortName(*j).c_str());
 	}
 	printf("\n\n");
       }
       exit(1);
+    }
+
+    if (drivername.empty() || input.empty() || output.empty()) {
+      MidiSetupDialog setupDialog;
+      if (!setupDialog.run(drivername, input, output)) {
+        printf("No MIDI interface selected. Exiting.\n");
+        exit(1);
+      }
     }
 
     driver = MidiDriver::createDriver(drivername);

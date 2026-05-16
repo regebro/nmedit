@@ -78,7 +78,16 @@ string Parser::trim(string line)
   while (line.length() > 0 && (line[0] == ' ' || line[0] == '\t')) {
     line = line.substr(1);
   }
-  return line.substr(0, line.length() - 1);
+  while (line.length() > 0) {
+    char c = line[line.length() - 1];
+    if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
+      line = line.substr(0, line.length() - 1);
+    }
+    else {
+      break;
+    }
+  }
+  return line;
 }
 
 void Parser::parse(string line,
@@ -94,6 +103,11 @@ void Parser::parse(string line,
       break;
     }
     bundles->push_back(token);
+  }
+  // Handle "key = " with empty expression: line is "=" and loop exited
+  if (token != "=" && line == "=") {
+    token = "=";
+    line = "";
   }
   if (token != "=") {
     throw

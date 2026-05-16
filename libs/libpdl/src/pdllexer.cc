@@ -22,8 +22,11 @@
 using namespace std;
 
 PDLLexer::PDLLexer( istream* arg_yyin , ostream* arg_yyout  )
-	: pdlFlexLexer( arg_yyin, yyout )
+    : pdlFlexLexer( arg_yyin, arg_yyout )
 {
 	;
 }
+
+#undef yywrap
+int pdlFlexLexer::yywrap() { return 1; }
 

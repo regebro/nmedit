@@ -47,7 +47,7 @@ Bundle* Bundle::getBundle(string name, string bindings)
   for (BundleMap::iterator n = bundles.begin(); n != bundles.end(); n++) {
     Tcl_Eval(interp,
 	     (char*)(bindings + " regexp ^" + (*n).first + "$ " + name).c_str());
-    if (string("1") == interp->result) {
+    if (string("1") == Tcl_GetStringResult(interp)) {
       return (*n).second;
     }
   }
@@ -66,13 +66,13 @@ string Bundle::getProperty(string name, int level, string bindings)
        n != properties.end(); n++) {
     Tcl_Eval(interp,
 	     (char*)(bindings + " regexp ^" + (*n).first + "$ " + name).c_str());
-    if (string("1") == interp->result) {
+    if (string("1") == Tcl_GetStringResult(interp)) {
       char slevel[11];
       snprintf(slevel, 10, "%d", level);
       Tcl_Eval(interp,
 	       (char*)(bindings + " set " + slevel + " " + name + ";" +
 		" return " + (*n).second + ";").c_str());
-      return string(interp->result);
+      return string(Tcl_GetStringResult(interp));
     }
   }
   throw PPFException(string("Missing property: ") + bindings + " " + name, 1);

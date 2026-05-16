@@ -45,6 +45,7 @@ extern "C" {
 class NMLexer : public nmFlexLexer {
 public:
 	NMLexer( std::istream* arg_yyin = 0, std::ostream* arg_yyout = 0 );
+	virtual int yywrap() { return 1; }
 protected:
 };
 

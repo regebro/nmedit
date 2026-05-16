@@ -24,6 +24,8 @@
 
 #include "nmprotocol/mididriver.h"
 
+struct _snd_rawmidi;
+
 using namespace std;
 
 class ALSADriver : public virtual MidiDriver
@@ -45,8 +47,8 @@ class ALSADriver : public virtual MidiDriver
  private:
 
   Bytes inputBuffer;
-  int fd_in;
-  int fd_out;
+  _snd_rawmidi* midi_in;
+  _snd_rawmidi* midi_out;
 
   StringList getMidiPorts(int flags);
 };

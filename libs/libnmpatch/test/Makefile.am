@@ -2,7 +2,7 @@
 INCLUDES = -I.. -I../../libppf
 AM_LDFLAGS = -L../src -L../../libppf/src
 
-LDADD = -lnmpatch -lppf -ltcl8.4
+LDADD = -lnmpatch -lppf -ltcl8.6
 
 check_PROGRAMS = libnmpatch_test1 libnmpatch_test2
 
